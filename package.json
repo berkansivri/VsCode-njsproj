@@ -1,12 +1,12 @@
 {
 	"name": "vscode-njsproj",
 	"displayName": "VS Code .njsproj",
-  "description": "Handle add/delete files to .njsproj",
-  "publisher": "berkansivri",
-  "repository": {
-    "type": ".git",
-    "url": "https://github.com/berkansivri/vscode-njsproj.git"
-  },
+	"description": "Automatic add/delete files to .njsproj",
+	"publisher": "berkansivri",
+	"repository": {
+		"type": ".git",
+		"url": "https://github.com/berkansivri/vscode-njsproj.git"
+	},
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.39.0"
@@ -15,17 +15,9 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"*"
 	],
 	"main": "./extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "extension.helloWorld",
-				"title": "Hello World"
-			}
-		]
-	},
 	"scripts": {
 		"test": "node ./test/runTest.js"
 	},
@@ -39,5 +31,8 @@
 		"mocha": "^6.1.4",
 		"typescript": "^3.3.1",
 		"vscode-test": "^1.2.0"
+	},
+	"dependencies": {
+		"xml2js": "^0.4.22"
 	}
 }

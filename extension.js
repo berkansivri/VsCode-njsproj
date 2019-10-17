@@ -9,28 +9,27 @@ const builder = new xml2js.Builder()
 
 function activate(context) {
   console.log("ACTIVATED");
-  let disposable = vscode.commands.registerCommand('extension.helloWorld', function () {
-    vscode.window.showInformationMessage('Hello World!')
-  })
 
   const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*')
   fileWatcher.onDidCreate(async (e) => {
+    console.log("create");
+    console.log(e);
     try {
-      const document = await vscode.workspace.openTextDocument(e.path)
-      console.log(path.resolve(document.fileName));
-      if (!!document) {
+      const isFile = fs.lstatSync(e.fsPath).isFile()
+      if (isFile) {
 
-        const parsedFilePath = path.parse(document.fileName)
-        let folderPath = parsedFilePath.dir.split(vscode.workspace.name).pop().slice(1) + "\\"
+        const parsedFilePath = path.parse(e.fsPath)
         const njsFiles = await vscode.workspace.findFiles('**/*.njsproj')
 
-        if (njsFiles.length) {
+        if (njsFiles.length > 0) {
 
           const njsPath = njsFiles[0].path
           const content = await vscode.workspace.openTextDocument(njsPath)
           const xmlObj = await xml2js.parseStringPromise(content.getText())
           const [content1, folder] = xmlObj.Project.ItemGroup
+
           // FOLDER REGISTER
+          let folderPath = parsedFilePath.dir.split(vscode.workspace.name).pop().slice(1) + "\\"
           const isFolderExist = folder.Folder.map(f => f.$.Include).includes(folderPath)
           if (!isFolderExist) {
             folder.Folder.push({
@@ -49,6 +48,7 @@ function activate(context) {
 
           const finalXml = builder.buildObject(xmlObj)
           fs.writeFileSync(njsPath.substring(1), finalXml, 'utf8')
+          vscode.window.showInformationMessage('File added to .njsproj')
         }
       }
     } catch (ex) {
@@ -57,26 +57,57 @@ function activate(context) {
 
   })
 
-  fileWatcher.onDidChange((e) => {
-    // console.log("change");
-    // vscode.workspace.findFiles('*/*.njsproj').then((val, err) => {
-    //   console.log(val);
-    //   njsprojFilePath = val[0].path
-    //   fs.readFile(njsprojFilePath, (err, data) => {
-    //     if (err) {
-    //       vscode.window.showWarningMessage("Can not open njsproj file")
-    //     }
-    //     console.log(xml2js.parseString(data));
-    //   })
-    // })
-  })
+  fileWatcher.onDidChange((e) => {})
 
-  fileWatcher.onDidDelete((e) => {
+  fileWatcher.onDidDelete(async (e) => {
     console.log("delete");
-    console.log(e)
-  })
+    console.log(e);
+    try {
+      console.log(e);
+      const parsedFilePath = path.parse(e.fsPath)
+      const njsFiles = await vscode.workspace.findFiles('**/*.njsproj')
 
-  context.subscriptions.push(disposable)
+      if (njsFiles.length > 0) {
+
+        const njsPath = njsFiles[0].path
+        const content = await vscode.workspace.openTextDocument(njsPath)
+        const xmlObj = await xml2js.parseStringPromise(content.getText())
+        const [content1, folder, content2] = xmlObj.Project.ItemGroup
+
+
+        const deletedPath = e.fsPath.split(vscode.workspace.name).pop().slice(1) + "\\"
+        const folderIndex = folder.Folder.map(f => f.$.Include).indexOf(deletedPath)
+        if (folderIndex > -1) {
+          // FOLDER DELETED
+          folder.Folder.splice(folderIndex, 1)
+          console.log(content1.Content.length);
+          // REMOVE FILES UNDER THAT FOLDER
+          content1.Content = content1.Content.filter(f => (f.$.Include.split("\\").slice(0, -1).join("\\") + "\\") !== deletedPath)
+          content2.Content = content2.Content.filter(f => (f.$.Include.split("\\").slice(0, -1).join("\\") + "\\") !== deletedPath)
+          console.log(content1.Content.length);
+        } else {
+          // FILE DELETED
+          let folderPath = parsedFilePath.dir.split(vscode.workspace.name).pop().slice(1) + "\\"
+          const filePath = path.join(folderPath, parsedFilePath.base)
+          let fileIndex = content1.Content.map(f => f.$.Include).indexOf(filePath)
+          if (fileIndex > -1) {
+            content1.Content.splice(fileIndex, 1)
+          }
+          fileIndex = content2.Content.map(f => f.$.Include).indexOf(filePath)
+          if (fileIndex > -1) {
+            content2.Content.splice(fileIndex, 1)
+          }
+        }
+
+        const finalXml = builder.buildObject(xmlObj)
+        fs.writeFileSync(njsPath.substring(1), finalXml, 'utf8')
+        vscode.window.showInformationMessage('File deleted from .njsproj')
+      }
+
+    } catch (ex) {
+      console.log(ex);
+    }
+  })
 }
 exports.activate = activate
 

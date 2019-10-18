@@ -9,7 +9,7 @@ let isWriteFinished = true
 
 function activate(context) {
   console.log("ACTIVATED");
-  const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*')
+  const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*', false, true, false)
   fileWatcher.onDidCreate(async (e) => {
     console.log("create")
     isWriteFinished = false
@@ -75,6 +75,7 @@ function activate(context) {
         console.log("write not finished")
         await timer(50)
       }
+      isWriteFinished = false
       
       const parsedFilePath = path.parse(e.fsPath)
       const njsFiles = await vscode.workspace.findFiles('**/*.njsproj')
@@ -101,6 +102,7 @@ function activate(context) {
           const filePath = path.join(folderPath, parsedFilePath.base)
           let fileIndex = content1.Content.map(f => f.$.Include).indexOf(filePath)
           if (fileIndex > -1) {
+            // content1.Content = content1.Content.filter(f => f.$.Include !== filePath)
             content1.Content.splice(fileIndex, 1)
           } else {
             fileIndex = content2.Content.map(f => f.$.Include).indexOf(filePath)
@@ -123,6 +125,7 @@ function activate(context) {
       console.log(ex);
     }
   })
+
   const timer = (ms) => { return new Promise(res => setTimeout(res, ms)) }
 }
 exports.activate = activate

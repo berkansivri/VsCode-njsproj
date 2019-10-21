@@ -7,30 +7,6 @@ const xml2js = require('xml2js')
 const builder = new xml2js.Builder()
 let isWriteFinished = true
 
-async function getNjsprojFile() {
-  const njsprojFile = await vscode.workspace.findFiles('**/*.njsproj')
-  if (njsprojFile.length === 0) {
-    deactivate()
-    return []
-  } else return njsprojFile[0]
-}
-
-async function getNjsprojContent(njsProjFile) {
-  const content = await vscode.workspace.openTextDocument(njsProjFile.path)
-  const xmlObj = await xml2js.parseStringPromise(content.getText())
-  return xmlObj
-}
-
-async function wait() {
-  const timer = (ms) => {
-    return new Promise(res => setTimeout(res, ms))
-  }
-  while (!isWriteFinished) {
-    await timer(50)
-  }
-  return
-}
-
 function activate(context) {
   console.log("ACTIVATED");
 
@@ -39,7 +15,7 @@ function activate(context) {
     console.log("create")
     try {
 
-      await wait()
+      await waitForProcess()
       isWriteFinished = false
 
       const njsFile = await getNjsprojFile();
@@ -83,7 +59,7 @@ function activate(context) {
   fileWatcher.onDidDelete(async (e) => {
     console.log("delete")
     try {
-      await wait()
+      await waitForProcess()
       isWriteFinished = false
 
       const njsFile = await getNjsprojFile();
@@ -92,19 +68,17 @@ function activate(context) {
 
       let deletedPath = path.normalize(vscode.workspace.asRelativePath(e.fsPath))
 
-      const folderIndex = folder.Folder.map(f => f.$.Include.slice(0, -1)).indexOf(deletedPath)
-      // If a folder deleted
-      if (folderIndex > -1) {
-        // Delete Folder
-        folder.Folder.splice(folderIndex, 1)
+      const deletedFolders = folder.Folder.filter(f => f.$.Include.slice(0, -1).includes(deletedPath))
+
+      if (deletedFolders.length > 0) {
+        // Remove nested folders
+        folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f))
         // Remove Files Under Deleted Folder
-        content1.Content = content1.Content.filter(f => path.dirname(f.$.Include) !== deletedPath)
-        content2.Content = content2.Content.filter(f => path.dirname(f.$.Include) !== deletedPath)
+        content1.Content = content1.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
+        content2.Content = content2.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
       } else {
-        // Delete File
         let fileIndex = content1.Content.map(f => f.$.Include).indexOf(deletedPath)
         if (fileIndex > -1) {
-          // content1.Content = content1.Content.filter(f => f.$.Include !== filePath)
           content1.Content.splice(fileIndex, 1)
         } else {
           fileIndex = content2.Content.map(f => f.$.Include).indexOf(deletedPath)
@@ -116,7 +90,6 @@ function activate(context) {
 
       const finalXml = builder.buildObject(xmlObj)
       fs.writeFileSync(njsFile.fsPath, finalXml, 'utf8')
-      // fs.writeFileSync(njsPath.substring(1), finalXml, 'utf8')
       vscode.window.showInformationMessage('.njsproj updated')
     } catch (ex) {
       console.log(ex);
@@ -125,11 +98,34 @@ function activate(context) {
     }
     isWriteFinished = true
   })
-
 }
 exports.activate = activate
 
 function deactivate() {}
+
+async function getNjsprojFile() {
+  const njsprojFile = await vscode.workspace.findFiles('**/*.njsproj')
+  if (njsprojFile.length === 0) {
+    deactivate()
+    return []
+  } else return njsprojFile[0]
+}
+
+async function getNjsprojContent(njsProjFile) {
+  const content = await vscode.workspace.openTextDocument(njsProjFile.path)
+  const xmlObj = await xml2js.parseStringPromise(content.getText())
+  return xmlObj
+}
+
+async function waitForProcess() {
+  const timer = (ms) => {
+    return new Promise(res => setTimeout(res, ms))
+  }
+  while (!isWriteFinished) {
+    await timer(50)
+  }
+  return
+}
 
 module.exports = {
   activate,

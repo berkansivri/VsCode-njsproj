@@ -7,126 +7,125 @@ const xml2js = require('xml2js')
 const builder = new xml2js.Builder()
 let isWriteFinished = true
 
+async function getNjsprojFile() {
+  const njsprojFile = await vscode.workspace.findFiles('**/*.njsproj')
+  if (njsprojFile.length === 0) {
+    deactivate()
+    return []
+  } else return njsprojFile[0]
+}
+
+async function getNjsprojContent(njsProjFile) {
+  const content = await vscode.workspace.openTextDocument(njsProjFile.path)
+  const xmlObj = await xml2js.parseStringPromise(content.getText())
+  return xmlObj
+}
+
+async function wait() {
+  const timer = (ms) => {
+    return new Promise(res => setTimeout(res, ms))
+  }
+  while (!isWriteFinished) {
+    await timer(50)
+  }
+  return
+}
+
 function activate(context) {
   console.log("ACTIVATED");
+
   const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*', false, true, false)
   fileWatcher.onDidCreate(async (e) => {
     console.log("create")
-    isWriteFinished = false
-    console.log("is write finished", isWriteFinished);
     try {
+
+      await wait()
+      isWriteFinished = false
+
+      const njsFile = await getNjsprojFile();
+      const xmlObj = await getNjsprojContent(njsFile)
+      const [content1, folder] = xmlObj.Project.ItemGroup
+
       const isFile = fs.lstatSync(e.fsPath).isFile()
       if (isFile) {
-
-        const parsedFilePath = path.parse(e.fsPath)
-        const njsFiles = await vscode.workspace.findFiles('**/*.njsproj')
-
-        if (njsFiles.length > 0) {
-          
-          const njsPath = njsFiles[0].path
-          const content = await vscode.workspace.openTextDocument(njsPath)
-          const xmlObj = await xml2js.parseStringPromise(content.getText())
-          const [content1, folder] = xmlObj.Project.ItemGroup
-
-          // FOLDER REGISTER
-          let folderPath = parsedFilePath.dir.split(vscode.workspace.name).pop().slice(1) + "\\"
-          const isFolderExist = folder.Folder.map(f => f.$.Include).includes(folderPath)
-          if (!isFolderExist) {
-            folder.Folder.push({
-              $: {
-                Include: folderPath
-              }
-            })
-          }
-
-          // FILE REGISTER
+        let filePath = path.normalize(vscode.workspace.asRelativePath(e.fsPath))
+        const isFileExist = content1.Content.map(f => f.$.Include).includes(filePath)
+        if (!isFileExist) {
           content1.Content.push({
             $: {
-              Include: path.join(folderPath, parsedFilePath.base)
+              Include: filePath
             }
           })
-
-          const finalXml = builder.buildObject(xmlObj)
-          console.log("create write start")
-          console.log(e.fsPath);
-          fs.writeFile(njsPath.substring(1), finalXml, 'utf8', (err) => {
-            console.log("writefile callback statement");
-            if(err) vscode.window.showWarningMessage(err.message)
-            isWriteFinished = true
+        }
+      } else {
+        let folderPath = path.normalize(vscode.workspace.asRelativePath(e.fsPath)) + "\\"
+        const isFolderExist = folder.Folder.map(f => f.$.Include).includes(folderPath)
+        if (!isFolderExist) {
+          folder.Folder.push({
+            $: {
+              Include: folderPath
+            }
           })
-          console.log("create write stop")
-          
-        } else isWriteFinished = true
-        vscode.window.showInformationMessage('File added to .njsproj')
+        }
+      }
 
-      } else isWriteFinished = true
+      const finalXml = builder.buildObject(xmlObj)
+      fs.writeFileSync(njsFile.fsPath, finalXml, 'utf8')
+      vscode.window.showInformationMessage('.njsproj updated')
     } catch (ex) {
       console.log(ex);
+      if (ex.message) vscode.window.showWarningMessage(err.message)
       isWriteFinished = true
     }
+    isWriteFinished = true
   })
-  
-  fileWatcher.onDidChange((e) => {})
-  
+
   fileWatcher.onDidDelete(async (e) => {
     console.log("delete")
     try {
-      while(!isWriteFinished) {
-        console.log("write not finished")
-        await timer(50)
-      }
+      await wait()
       isWriteFinished = false
-      
-      const parsedFilePath = path.parse(e.fsPath)
-      const njsFiles = await vscode.workspace.findFiles('**/*.njsproj')
-      
-      if (njsFiles.length > 0) {
 
-        const njsPath = njsFiles[0].path
-        const content = await vscode.workspace.openTextDocument(njsPath)
-        const xmlObj = await xml2js.parseStringPromise(content.getText())
-        const [content1, folder, content2] = xmlObj.Project.ItemGroup
-        
-        
-        const deletedPath = e.fsPath.split(vscode.workspace.name).pop().slice(1) + "\\"
-        const folderIndex = folder.Folder.map(f => f.$.Include).indexOf(deletedPath)
-        if (folderIndex > -1) {
-          // Delete Folder
-          folder.Folder.splice(folderIndex, 1)
-          // Remove Files Under Deleted Folder
-          content1.Content = content1.Content.filter(f => (f.$.Include.split("\\").slice(0, -1).join("\\") + "\\") !== deletedPath)
-          content2.Content = content2.Content.filter(f => (f.$.Include.split("\\").slice(0, -1).join("\\") + "\\") !== deletedPath)
+      const njsFile = await getNjsprojFile();
+      const xmlObj = await getNjsprojContent(njsFile)
+      const [content1, folder, content2] = xmlObj.Project.ItemGroup
+
+      let deletedPath = path.normalize(vscode.workspace.asRelativePath(e.fsPath))
+
+      const folderIndex = folder.Folder.map(f => f.$.Include.slice(0, -1)).indexOf(deletedPath)
+      // If a folder deleted
+      if (folderIndex > -1) {
+        // Delete Folder
+        folder.Folder.splice(folderIndex, 1)
+        // Remove Files Under Deleted Folder
+        content1.Content = content1.Content.filter(f => path.dirname(f.$.Include) !== deletedPath)
+        content2.Content = content2.Content.filter(f => path.dirname(f.$.Include) !== deletedPath)
+      } else {
+        // Delete File
+        let fileIndex = content1.Content.map(f => f.$.Include).indexOf(deletedPath)
+        if (fileIndex > -1) {
+          // content1.Content = content1.Content.filter(f => f.$.Include !== filePath)
+          content1.Content.splice(fileIndex, 1)
         } else {
-          // Delete File
-          let folderPath = parsedFilePath.dir.split(vscode.workspace.name).pop().slice(1) + "\\"
-          const filePath = path.join(folderPath, parsedFilePath.base)
-          let fileIndex = content1.Content.map(f => f.$.Include).indexOf(filePath)
+          fileIndex = content2.Content.map(f => f.$.Include).indexOf(deletedPath)
           if (fileIndex > -1) {
-            // content1.Content = content1.Content.filter(f => f.$.Include !== filePath)
-            content1.Content.splice(fileIndex, 1)
-          } else {
-            fileIndex = content2.Content.map(f => f.$.Include).indexOf(filePath)
-            if (fileIndex > -1) {
-              content2.Content.splice(fileIndex, 1)
-            }
+            content2.Content.splice(fileIndex, 1)
           }
         }
-        
-        const finalXml = builder.buildObject(xmlObj)
-        console.log("delete write start");
-        console.log(e.fsPath);
-        fs.writeFileSync(njsPath.substring(1), finalXml, 'utf8')
-        console.log("delete write stop");
-        // fs.writeFileSync(njsPath.substring(1), finalXml, 'utf8')
-        vscode.window.showInformationMessage('File deleted from .njsproj')
       }
 
+      const finalXml = builder.buildObject(xmlObj)
+      fs.writeFileSync(njsFile.fsPath, finalXml, 'utf8')
+      // fs.writeFileSync(njsPath.substring(1), finalXml, 'utf8')
+      vscode.window.showInformationMessage('.njsproj updated')
     } catch (ex) {
       console.log(ex);
+      if (ex.message) vscode.window.showWarningMessage(ex.message)
+      isWriteFinished = true
     }
+    isWriteFinished = true
   })
 
-  const timer = (ms) => { return new Promise(res => setTimeout(res, ms)) }
 }
 exports.activate = activate
 

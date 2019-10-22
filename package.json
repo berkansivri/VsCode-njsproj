@@ -1,24 +1,29 @@
 {
 	"name": "vscode-njsproj",
 	"displayName": "VS Code .njsproj",
-	"description": "Automatic add/delete files to .njsproj",
+	"description": "Automaticly sync .njsproj file",
 	"publisher": "berkansivri",
+  "icon": "icon.png",
+  "license": "MIT",
 	"repository": {
 		"type": ".git",
 		"url": "https://github.com/berkansivri/vscode-njsproj.git"
 	},
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
 	"categories": [
-    "Other",
+		"Other"
 	],
 	"activationEvents": [
-    "*"
+		"*"
 	],
-	"main": "./extension.js",
+	"main": "./out/extension.js",
 	"scripts": {
+    "vscode:prepublish": "webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch",
 		"test": "node ./test/runTest.js"
 	},
 	"devDependencies": {
@@ -30,7 +35,9 @@
 		"glob": "^7.1.5",
 		"mocha": "^6.2.2",
 		"typescript": "^3.6.4",
-		"vscode-test": "^1.2.0"
+		"vscode-test": "^1.2.0",
+		"webpack": "^4.41.2",
+		"webpack-cli": "^3.3.9"
 	},
 	"dependencies": {
 		"xml2js": "^0.4.22"

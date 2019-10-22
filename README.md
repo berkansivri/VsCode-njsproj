@@ -1,8 +1,12 @@
-<p align="center"><img src="https://i.postimg.cc/C1qCrY1P/njsproj.png"></p>
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=BerkanSivri.vscode-njsproj">
+    <img src="https://i.postimg.cc/C1qCrY1P/njsproj.png" alt="VS Code .njsproj" height="138" width="110">
+  </a>
+</p>
 
 # Visual Studio Code *njsproj* Extension
 
-This extension will automaticly keep your `njsproj` files up-to-date.<br/>
+<a href="https://marketplace.visualstudio.com/items?itemName=BerkanSivri.vscode-njsproj">This extension</a> will automaticly keep your `njsproj` files up-to-date.<br/>
 This will helps the teams which are uses both VS Code and Visual Studio.
 
 ## Features

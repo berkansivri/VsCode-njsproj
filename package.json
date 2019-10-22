@@ -8,8 +8,12 @@
 	"repository": {
 		"type": ".git",
 		"url": "https://github.com/berkansivri/vscode-njsproj.git"
-	},
-	"version": "0.1.0",
+  },
+  "keywords": [
+    ".njsproj",
+    "njsproj"
+  ],
+	"version": "0.1.2",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
@@ -17,8 +21,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"*"
-	],
+    "*"
+  ],
 	"main": "./out/extension.js",
 	"scripts": {
     "vscode:prepublish": "webpack --mode production",

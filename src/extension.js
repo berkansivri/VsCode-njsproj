@@ -11,22 +11,23 @@ let njsprojFile = null
 
 function activate(context) {
   console.log("ACTIVATED")
-
+  
   workspace.findFiles('**/*.njsproj', '**/node_modules/**', 1).then(arr => arr.length === 0 && deactivate())
-
+  
   fileWatcher = workspace.createFileSystemWatcher('**/*', false, true, false)
   fileWatcher.onDidCreate(async (e) => {
+    console.log("created");
     await waitForProcess()
 
     try {
       njsprojFile = await getNjsprojFile(e)
       if (njsprojFile) {
         const xmlObj = await getNjsprojContent()
-        const [content1, folder] = xmlObj.Project.ItemGroup
+        const [content1, folder, content2] = xmlObj.Project.ItemGroup
         const isFile = fs.lstatSync(e.fsPath).isFile()
         if (isFile) {
           let filePath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath)
-          const isFileExist = content1.Content.map(f => f.$.Include).includes(filePath)
+          const isFileExist = content1.Content.findIndex(f => f.$.Include === filePath) > -1
           if (!isFileExist) {
             content1.Content.push({
               $: {
@@ -36,14 +37,23 @@ function activate(context) {
           }
         } else {
           let folderPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath) + path.sep
-          const isFolderExist = folder.Folder.map(f => f.$.Include).includes(folderPath)
+          const isFolderExist = folder.Folder.findIndex(f => f.$.Include === folderPath) > -1
           if (!isFolderExist) {
             folder.Folder.push({
               $: {
                 Include: folderPath
               }
             })
+            // folder.Folder.push(...subFolders.map(f => f.$.Include = ))
           }
+          //    TODO
+          // const filesUnderFolder = [
+          //   ...content1.Content.filter(f => f.$.Include.includes(folderPath)), 
+          //   ...content2.Content.filter(f => f.$.Include.includes(folderPath))
+          // ]
+          // if(filesUnderFolder.length > 0) {
+          //   content1.Content.push(...filesUnderFolder)
+          // }
         }
 
         writeNjsprojFile(xmlObj)
@@ -58,8 +68,8 @@ function activate(context) {
   })
 
   fileWatcher.onDidDelete(async (e) => {
+    console.log("deleted");
     await waitForProcess()
-
     try {
       njsprojFile = await getNjsprojFile(e)
       if (njsprojFile) {
@@ -76,13 +86,12 @@ function activate(context) {
           // Remove Files Under Deleted Folder
           content1.Content = content1.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
           content2.Content = content2.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
-          // content1.Content = content1.Content.filter(f => !isRelative(deletedPath, path.dirname(f.$.Include)))
         } else {
-          let fileIndex = content1.Content.map(f => f.$.Include).indexOf(deletedPath)
+          let fileIndex = content1.Content.findIndex(f => f.$.Include === deletedPath)
           if (fileIndex > -1) {
             content1.Content.splice(fileIndex, 1)
           } else {
-            fileIndex = content2.Content.map(f => f.$.Include).indexOf(deletedPath)
+            fileIndex = content2.Content.findIndex(f => f.$.Include === deletedPath)
             if (fileIndex > -1) {
               content2.Content.splice(fileIndex, 1)
             }

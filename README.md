@@ -12,8 +12,12 @@ This will helps the teams which are uses both VS Code and Visual Studio.
 ## Features
 
 **Focus on your work, this is a silent extension.**<br/><br/>
-There is **no need** configuration or manually adding files to .njsproj with context menu.
-This extension works like Visual Studio itself. Automaticly keeps your .njsproj files sync while you are adding or removing files/folders from your project. Also supports for copying multiple files from another project or multiple deletion in your project. 
+This extension works like Visual Studio itself. There is **no need** configuration or manually adding files to .njsproj with context menu or confirm box.
+Automaticly keeps your .njsproj files sync while you are adding or removing files/folders from your project. 
+
+* Supports multiple projects that contain njsproj files in the workspace
+* Supports drag and drop multiple files/folders from another place
+* Supports nested folders deletion or move
 
 ## License
 

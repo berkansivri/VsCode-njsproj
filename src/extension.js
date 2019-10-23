@@ -16,16 +16,16 @@ function activate(context) {
 
   fileWatcher = workspace.createFileSystemWatcher('**/*', false, true, false)
   fileWatcher.onDidCreate(async (e) => {
-    try {
-      await waitForProcess()
+    await waitForProcess()
 
+    try {
       njsprojFile = await getNjsprojFile(e)
       if (njsprojFile) {
         const xmlObj = await getNjsprojContent()
         const [content1, folder] = xmlObj.Project.ItemGroup
         const isFile = fs.lstatSync(e.fsPath).isFile()
         if (isFile) {
-          let filePath = path.normalize(workspace.asRelativePath(e.fsPath))
+          let filePath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath)
           const isFileExist = content1.Content.map(f => f.$.Include).includes(filePath)
           if (!isFileExist) {
             content1.Content.push({
@@ -35,7 +35,7 @@ function activate(context) {
             })
           }
         } else {
-          let folderPath = path.normalize(workspace.asRelativePath(e.fsPath)) + path.sep
+          let folderPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath) + path.sep
           const isFolderExist = folder.Folder.map(f => f.$.Include).includes(folderPath)
           if (!isFolderExist) {
             folder.Folder.push({
@@ -47,27 +47,26 @@ function activate(context) {
         }
 
         writeNjsprojFile(xmlObj)
-        window.showInformationMessage('.njsproj updated')
       }
     } catch (ex) {
       console.log(ex)
       if (ex.message) window.showWarningMessage(err.message)
-      else window.showWarningMessage("VsCode .njsproj failure")
+      else window.showWarningMessage("VsCode .njsproj failed")
       isWriteFinished = true
     }
     isWriteFinished = true
   })
 
   fileWatcher.onDidDelete(async (e) => {
-    try {
-      await waitForProcess()
+    await waitForProcess()
 
+    try {
       njsprojFile = await getNjsprojFile(e)
       if (njsprojFile) {
         const xmlObj = await getNjsprojContent()
         const [content1, folder, content2] = xmlObj.Project.ItemGroup
 
-        let deletedPath = path.normalize(workspace.asRelativePath(e.fsPath))
+        let deletedPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath)
 
         const deletedFolders = folder.Folder.filter(f => f.$.Include.slice(0, -1).includes(deletedPath))
 
@@ -75,9 +74,9 @@ function activate(context) {
           // Remove nested folders
           folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f))
           // Remove Files Under Deleted Folder
-          content1.Content = content1.Content.filter(f => !isRelative(path.dirname(deletedPath), path.dirname(f.$.Include)))
-          content2.Content = content2.Content.filter(f => !isRelative(path.dirname(deletedPath), path.dirname(f.$.Include)))
-          // content2.Content = content2.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
+          content1.Content = content1.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
+          content2.Content = content2.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
+          // content1.Content = content1.Content.filter(f => !isRelative(deletedPath, path.dirname(f.$.Include)))
         } else {
           let fileIndex = content1.Content.map(f => f.$.Include).indexOf(deletedPath)
           if (fileIndex > -1) {
@@ -91,12 +90,11 @@ function activate(context) {
         }
 
         writeNjsprojFile(xmlObj)
-        window.showInformationMessage('.njsproj updated')
       }
     } catch (ex) {
       console.log(ex)
       if (ex.message) window.showWarningMessage(ex.message)
-      else window.showWarningMessage("VsCode .njsproj failure")
+      else window.showWarningMessage("VsCode .njsproj failed")
       isWriteFinished = true
     }
     isWriteFinished = true
@@ -133,10 +131,11 @@ async function getNjsprojContent() {
   return xmlObj
 }
 
+async function timer(ms) {
+  return new Promise(res => setTimeout(res, ms))
+}
+
 async function waitForProcess() {
-  const timer = (ms) => {
-    return new Promise(res => setTimeout(res, ms))
-  }
   while (!isWriteFinished) {
     await timer(50)
   }

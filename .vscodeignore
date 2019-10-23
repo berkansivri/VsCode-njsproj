@@ -5,7 +5,7 @@ test/**
 **/jsconfig.json
 **/*.map
 **/.eslintrc.json
-out/
 webpack.config.js
 src/
+out/
 node_modules

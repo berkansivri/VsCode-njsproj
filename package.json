@@ -18,7 +18,7 @@
     ".njsproj",
     "njsproj"
   ],
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
@@ -28,7 +28,7 @@
 	"activationEvents": [
     "*"
   ],
-	"main": "./src/extension.js",
+	"main": "./dist/extension.js",
 	"scripts": {
     "vscode:prepublish": "webpack --mode production",
     "webpack": "webpack --mode development",

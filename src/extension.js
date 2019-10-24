@@ -11,19 +11,18 @@ let njsprojFile = null
 
 function activate(context) {
   console.log("ACTIVATED")
-  
+
   workspace.findFiles('**/*.njsproj', '**/node_modules/**', 1).then(arr => arr.length === 0 && deactivate())
-  
+
   fileWatcher = workspace.createFileSystemWatcher('**/*', false, true, false)
   fileWatcher.onDidCreate(async (e) => {
-    console.log("created");
     await waitForProcess()
 
     try {
       njsprojFile = await getNjsprojFile(e)
       if (njsprojFile) {
         const xmlObj = await getNjsprojContent()
-        const [content1, folder, content2] = xmlObj.Project.ItemGroup
+        const [content1, folder] = xmlObj.Project.ItemGroup
         const isFile = fs.lstatSync(e.fsPath).isFile()
         if (isFile) {
           let filePath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath)
@@ -44,18 +43,29 @@ function activate(context) {
                 Include: folderPath
               }
             })
-            // folder.Folder.push(...subFolders.map(f => f.$.Include = ))
+            const addNestedItems = (dirPath) => {
+              fs.readdirSync(dirPath).forEach(item => {
+                let fullPath = path.join(dirPath, item)
+                let njsPath = path.relative(path.dirname(njsprojFile.fsPath), fullPath)
+                if (fs.lstatSync(fullPath).isDirectory()) {
+                  folder.Folder.push({
+                    $: {
+                      Include: njsPath + path.sep
+                    }
+                  })
+                  addNestedItems(fullPath)
+                } else {
+                  content1.Content.push({
+                    $: {
+                      Include: njsPath
+                    }
+                  })
+                }
+              })
+            }
+            addNestedItems(e.fsPath)
           }
-          //    TODO
-          // const filesUnderFolder = [
-          //   ...content1.Content.filter(f => f.$.Include.includes(folderPath)), 
-          //   ...content2.Content.filter(f => f.$.Include.includes(folderPath))
-          // ]
-          // if(filesUnderFolder.length > 0) {
-          //   content1.Content.push(...filesUnderFolder)
-          // }
         }
-
         writeNjsprojFile(xmlObj)
       }
     } catch (ex) {
@@ -68,7 +78,6 @@ function activate(context) {
   })
 
   fileWatcher.onDidDelete(async (e) => {
-    console.log("deleted");
     await waitForProcess()
     try {
       njsprojFile = await getNjsprojFile(e)
@@ -81,9 +90,7 @@ function activate(context) {
         const deletedFolders = folder.Folder.filter(f => f.$.Include.slice(0, -1).includes(deletedPath))
 
         if (deletedFolders.length > 0) {
-          // Remove nested folders
           folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f))
-          // Remove Files Under Deleted Folder
           content1.Content = content1.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
           content2.Content = content2.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
         } else {
@@ -111,7 +118,7 @@ function activate(context) {
 }
 
 function deactivate() {
-  console.log("DEACTIVATE");
+  console.log("DEACTIVATE")
   fileWatcher.dispose()
 }
 

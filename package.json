@@ -28,7 +28,21 @@
 	"activationEvents": [
     "*"
   ],
-	"main": "./dist/extension.js",
+  "contributes": {
+		"commands": [
+			{
+        "command": "extension.njsproj.activate",
+        "category": "Sync njsproj",
+        "title": "Enable VS Code .njsproj"
+			},
+			{
+        "command": "extension.njsproj.deactivate",
+        "category": "Sync njsproj",
+        "title": "Disable VS Code .njsproj"
+			}
+		]
+	},
+	"main": "./src/extension.js",
 	"scripts": {
     "vscode:prepublish": "webpack --mode production",
     "webpack": "webpack --mode development",

@@ -1,4 +1,4 @@
-const { workspace, window } = require('vscode')
+const { workspace, window, commands } = require('vscode')
 const path = require('path')
 const fs = require('fs')
 const xml2js = require('xml2js')
@@ -9,12 +9,28 @@ let isWriteFinished = true
 let fileWatcher = null
 let njsprojFile = null
 
-function activate(context) {
+async function activate(context) {
   console.log("ACTIVATED")
+  setCommands(context)
+  
+  if (await checkNjsprojFile()) {
+    activatedDialog()
+    startWatch()
+  } else {
+    deactivate()
+  }
+}
 
-  workspace.findFiles('**/*.njsproj', '**/node_modules/**', 1).then(arr => arr.length === 0 && deactivate())
+function deactivate() {
+  console.log("DEACTIVATED")
+  if (fileWatcher) {
+    fileWatcher.dispose()
+  }
+}
 
+function startWatch() {
   fileWatcher = workspace.createFileSystemWatcher('**/*', false, true, false)
+  console.log("start watch");
   fileWatcher.onDidCreate(async (e) => {
     await waitForProcess()
 
@@ -71,7 +87,7 @@ function activate(context) {
     } catch (ex) {
       console.log(ex)
       if (ex.message) window.showWarningMessage(err.message)
-      else window.showWarningMessage("VsCode .njsproj failed")
+      else window.showWarningMessage("VS Code .njsproj failed")
       isWriteFinished = true
     }
     isWriteFinished = true
@@ -110,16 +126,46 @@ function activate(context) {
     } catch (ex) {
       console.log(ex)
       if (ex.message) window.showWarningMessage(ex.message)
-      else window.showWarningMessage("VsCode .njsproj failed")
+      else window.showWarningMessage("VS Code .njsproj failed")
       isWriteFinished = true
     }
     isWriteFinished = true
   })
 }
 
-function deactivate() {
-  console.log("DEACTIVATE")
-  fileWatcher.dispose()
+function setCommands(context) {
+  context.subscriptions.push(
+    commands.registerCommand('extension.njsproj.activate', async() => {
+      if (await checkNjsprojFile()) {
+        startWatch()
+        window.showInformationMessage("VS Code .njsproj Activated")
+      } else {
+        window.showErrorMessage("Coult not found *.njsproj file in workspace")
+      }
+    }),
+    commands.registerCommand('extension.njsproj.deactivate', () => {
+      deactivate()
+      window.showWarningMessage("VS Code .njsproj Deactivated")
+    })
+  )
+}
+
+async function checkNjsprojFile() {
+  const arr = await workspace.findFiles('**/*.njsproj', '**/node_modules/**', 1)
+  if (arr.length === 0) {
+    return false
+  } else {
+    return true
+  }
+}
+
+function activatedDialog() {
+  window.showInformationMessage("VS Code .njsproj Activated", "OK", "DISABLE").then(res => {
+    if (res === "DISABLE") {
+      window.showWarningMessage("VS Code .njsproj Deactivated")
+      deactivate()
+    }
+  })
 }
 
 function writeNjsprojFile(xmlObj) {
@@ -131,6 +177,7 @@ async function getNjsprojFile(e) {
   const njsprojFiles = await workspace.findFiles('**/*.njsproj', '**/node_modules/**', 5)
   if (njsprojFiles.length === 0) {
     deactivate()
+    return null
   } else {
     const njsFile = njsprojFiles.find(njs => {
       if (isRelative(path.dirname(njs.fsPath), path.dirname(e.fsPath))) {

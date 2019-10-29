@@ -18,6 +18,7 @@ It keeps your .njsproj files sync while you are adding or removing files/folders
 * Supports multiple projects that contains multiple `njsproj` files in the workspace
 * Supports drag and drop multiple files/folders from outside of workspace
 * Supports nested folders deletion or move in workspace
+* Supports renaming
 * **Supports almost anything you can do in workspace** *(if I missed a case, do not hesitate to open an <a href="https://github.com/berkansivri/VsCode-njsproj/issues/new">issue</a>)*
 
 ## Commands

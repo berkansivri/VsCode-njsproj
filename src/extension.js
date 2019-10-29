@@ -7,7 +7,6 @@ const njsproj = require('./njsproj')
 let isWriteFinished = true
 let fileWatcher = null
 let njsprojFile = null
-
 async function activate(context) {
   console.log("ACTIVATED")
   setCommands(context)
@@ -113,17 +112,12 @@ function startWatch() {
 
         const deletedPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath)
         
-        let deletedFolders = []
-        if(path.dirname(njsprojFile.fsPath) === path.dirname(e.fsPath)) {
-          deletedFolders = folder.Folder.filter(f => f.$.Include.slice(0, -1) === deletedPath)
-        } else {
-          deletedFolders = folder.Folder.filter(f => f.$.Include.slice(0, -1).includes(deletedPath))
-        }
+        let deletedFolders = folder.Folder.filter(f => isWithin(path.dirname(deletedPath), path.dirname(f.$.Include)))
 
         if (deletedFolders.length > 0) {
           folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f))
-          content1.Content = content1.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
-          content2.Content = content2.Content.filter(f => !path.dirname(f.$.Include).includes(deletedPath))
+          content1.Content = content1.Content.filter(f => isWithin(path.dirname(deletedPath), path.dirname(f.$.Include)))
+          content2.Content = content2.Content.filter(f => isWithin(path.dirname(deletedPath), path.dirname(f.$.Include)))
         } else {
           let fileIndex = content1.Content.findIndex(f => f.$.Include === deletedPath)
 
@@ -160,6 +154,11 @@ async function waitForProcess() {
     await timer(50)
   }
   isWriteFinished = false
+}
+
+function isWithin(outer, inner) {
+  const rel = path.relative(outer, inner);
+  return !rel.startsWith("..")
 }
 
 exports.activate = activate

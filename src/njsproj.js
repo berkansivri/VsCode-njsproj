@@ -45,7 +45,7 @@ async function getContent(njsFile) {
 
 function isRelative(parent, dir) {
   const relative = path.relative(parent, dir)
-  return relative !== undefined && (!relative.startsWith('..') || path.isAbsolute(relative))
+  return !relative.startsWith('..') || path.isAbsolute(relative)
 }
 
 module.exports = {

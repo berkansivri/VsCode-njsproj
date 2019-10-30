@@ -112,12 +112,16 @@ function startWatch() {
 
         const deletedPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath)
         
-        let deletedFolders = folder.Folder.filter(f => isWithin(path.dirname(deletedPath), path.dirname(f.$.Include)))
+        let deletedFolders = folder.Folder.filter(f => isWithin(deletedPath, f.$.Include))
 
         if (deletedFolders.length > 0) {
           folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f))
-          content1.Content = content1.Content.filter(f => isWithin(path.dirname(deletedPath), path.dirname(f.$.Include)))
-          content2.Content = content2.Content.filter(f => isWithin(path.dirname(deletedPath), path.dirname(f.$.Include)))
+          if(content1.Content) {
+            content1.Content = content1.Content.filter(f => !isWithin(deletedPath, path.dirname(f.$.Include)))
+          }
+          if(content2.Content) {
+            content2.Content = content2.Content.filter(f => !isWithin(deletedPath, path.dirname(f.$.Include)))
+          }
         } else {
           let fileIndex = content1.Content.findIndex(f => f.$.Include === deletedPath)
 

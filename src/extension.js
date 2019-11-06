@@ -1,17 +1,17 @@
-const { workspace, window } = require('vscode')
+const { workspace, window, commands } = require('vscode')
 const path = require('path')
 const fs = require('fs')
-const { setCommands, activatedDialog } = require('./messages')
 const njsproj = require('./njsproj')
 
 let isWriteFinished = true
 let fileWatcher = null
 let njsprojFile = null
-async function activate(context) {
+
+function activate(context) {
   console.log("ACTIVATED")
   setCommands(context)
   
-  if (await njsproj.checkFile()) {
+  if (njsproj.checkFile()) {
     activatedDialog()
     startWatch()
   } else {
@@ -163,6 +163,32 @@ async function waitForProcess() {
 function isWithin(outer, inner) {
   const rel = path.relative(outer, inner);
   return !rel.startsWith("..")
+}
+
+async function setCommands(context) {
+  context.subscriptions.push(
+    commands.registerCommand('extension.njsproj.activate', async () => {
+      if (await njsproj.checkFile()) {
+        startWatch()
+        window.showInformationMessage("VS Code .njsproj Activated")
+      } else {
+        window.showErrorMessage("Coult not found *.njsproj file in workspace")
+      }
+    }),
+    commands.registerCommand('extension.njsproj.deactivate', () => {
+      deactivate()
+      window.showWarningMessage("VS Code .njsproj Deactivated")
+    })
+  )
+}
+
+function activatedDialog() {
+  window.showInformationMessage("VS Code .njsproj Activated", "OK", "DISABLE").then(res => {
+    if (res === "DISABLE") {
+      window.showWarningMessage("VS Code .njsproj Deactivated")
+      deactivate()
+    }
+  })
 }
 
 exports.activate = activate

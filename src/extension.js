@@ -28,7 +28,6 @@ function deactivate() {
 
 function startWatch() {
   fileWatcher = workspace.createFileSystemWatcher('**/*', false, true, false);
-  console.log('start watch');
 
   fileWatcher.onDidCreate(async e => {
     await waitForProcess();
@@ -87,7 +86,7 @@ function startWatch() {
             addNestedItems(e.fsPath);
           }
         }
-        njsproj.writeFile(njsprojFile, xmlObj);
+        await njsproj.writeFile(njsprojFile, xmlObj);
       }
     } catch (err) {
       console.log(err);
@@ -106,39 +105,15 @@ function startWatch() {
 
       if (njsprojFile) {
         const xmlObj = await njsproj.getContent(njsprojFile);
-        const [content1, folder, content2] = xmlObj.Project.ItemGroup;
-
-        const deletedPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath);
-
-        let deletedFolders = folder.Folder.filter(f => isWithin(deletedPath, f.$.Include));
-
-        if (deletedFolders.length > 0) {
-          folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f));
-          if (content1.Content) {
-            content1.Content = content1.Content.filter(f => !isWithin(deletedPath, path.dirname(f.$.Include)));
-          }
-          if (content2.Content) {
-            content2.Content = content2.Content.filter(f => !isWithin(deletedPath, path.dirname(f.$.Include)));
-          }
-        } else {
-          let fileIndex = content1.Content.findIndex(f => f.$.Include === deletedPath);
-
-          if (fileIndex > -1) {
-            content1.Content.splice(fileIndex, 1);
-          } else {
-            fileIndex = content2.Content.findIndex(f => f.$.Include === deletedPath);
-
-            if (fileIndex > -1) {
-              content2.Content.splice(fileIndex, 1);
-            }
-          }
-        }
-
-        njsproj.writeFile(njsprojFile, xmlObj);
+        const deletedWinPath = path.win32.relative(path.dirname(njsprojFile.fsPath), e.fsPath);
+        const deletedPosixPath = path.posix.relative(path.dirname(njsprojFile.fsPath), e.fsPath);
+        deletePath(deletedWinPath, xmlObj);
+        deletePath(deletedPosixPath, xmlObj);
+        await njsproj.writeFile(njsprojFile, xmlObj);
       }
-    } catch (ex) {
-      console.log(ex);
-      if (ex.message) window.showWarningMessage(ex.message);
+    } catch (err) {
+      console.log(err);
+      if (err.message) window.showWarningMessage(err.message);
       else window.showWarningMessage('VS Code .njsproj failed');
       isWriteFinished = true;
     }
@@ -147,13 +122,38 @@ function startWatch() {
   });
 }
 
+function deletePath(deletedPath, xmlObj) {
+  const [content1, folder, content2] = xmlObj.Project.ItemGroup;
+  console.log(deletedPath);
+  let deletedFolders = folder.Folder.filter(f => isWithin(deletedPath, f.$.Include));
+  console.log(deletedFolders);
+  if (deletedFolders.length > 0) {
+    folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f));
+    if (content1.Content) {
+      content1.Content = content1.Content.filter(f => !isWithin(deletedPath, path.dirname(f.$.Include)));
+    }
+    if (content2.Content) {
+      content2.Content = content2.Content.filter(f => !isWithin(deletedPath, path.dirname(f.$.Include)));
+    }
+  } else {
+    let fileIndex = content1.Content.findIndex(f => f.$.Include === deletedPath);
+    if (fileIndex > -1) {
+      content1.Content.splice(fileIndex, 1);
+    }
+    fileIndex = content2.Content.findIndex(f => f.$.Include === deletedPath);
+    if (fileIndex > -1) {
+      content2.Content.splice(fileIndex, 1);
+    }
+  }
+}
+
 async function timer(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
 async function waitForProcess() {
   while (!isWriteFinished) {
-    await timer(50);
+    await timer(250);
   }
   isWriteFinished = false;
 }

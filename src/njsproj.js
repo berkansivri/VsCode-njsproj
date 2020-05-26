@@ -15,9 +15,9 @@ async function checkFile() {
   }
 }
 
-function writeFile(njsFile, xmlObj) {
+async function writeFile(njsFile, xmlObj) {
   const finalXml = builder.buildObject(xmlObj);
-  fs.writeFileSync(njsFile.fsPath, finalXml, 'utf8');
+  await fs.promises.writeFile(njsFile.fsPath, finalXml, 'utf8');
 }
 
 async function getFile(e) {

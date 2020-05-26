@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
@@ -5,14 +6,13 @@
     <Name>VuejsApp1</Name>
     <RootNamespace>VuejsApp1</RootNamespace>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d281c04c-3754-4be2-84a2-4531e41f4dd0</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>node_modules\@vue\cli-service\bin\vue-cli-service.js</StartupFile>
-    <SearchPath>
+    <SearchPath>&#xD;
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -28,49 +28,45 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="public\favicon.ico" />
-    <Content Include="public\index.html" />
-    <Content Include="src\App.vue" />
-    <Content Include="src\components\Home.vue" />
-    <Content Include="package.json" />
-    <Content Include="README.md" />
-    <Content Include="src\components\sub_component\SubComp1.vue">
-      <SubType>Code</SubType>
-    </Content>
-    <Content Include="src\views\sub_view\SubView1.vue">
-      <SubType>Code</SubType>
-    </Content>
-    <Content Include="src\views\View1.vue">
-      <SubType>Code</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="dist\" />
-    <Folder Include="public\" />
-    <Folder Include="src\" />
-    <Folder Include="src\assets\" />
-    <Folder Include="src\components\" />
-    <Folder Include="src\components\sub_component\" />
-    <Folder Include="src\views\" />
-    <Folder Include="src\views\sub_view\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="babel.config.js" />
-    <Content Include="src\components\SampleComp.vue">
-      <SubType>Code</SubType>
-    </Content>
-    <Content Include="src\components\SampleComp2.vue">
-      <SubType>Code</SubType>
-    </Content>
-    <Content Include="src\main.js" />
-  </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>
-      npm run build
+    <PostBuildEvent>&#xD;
+      npm run build&#xD;
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets"/>
+  <ItemGroup>
+    <Content Include="public\favicon.ico"/>
+    <Content Include="public\index.html"/>
+    <Content Include="src\App.vue"/>
+    <Content Include="src\components\Home.vue"/>
+    <Content Include="package.json"/>
+    <Content Include="README.md"/>
+    <Content Include="src\views\sub_view\SubView1.vue"/>
+    <Content Include="src\views\View1.vue"/>
+    <Content Include="src/components/sub1/aa.vue"/>
+    <Content Include="src/components/sub1/hello.vue"/>
+    <Content Include="src/components/sub1/sub3/a.vue"/>
+    <Content Include="src/components/sub1/sub3/c.vue"/>
+    <Content Include="src/components/sub1/sub2/b.vue"/>
+    <Content Include="src/components/sub1/sub2/d.vue"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="dist\"/>
+    <Folder Include="public\"/>
+    <Folder Include="src\"/>
+    <Folder Include="src\assets\"/>
+    <Folder Include="src\components\"/>
+    <Folder Include="src\views\"/>
+    <Folder Include="src\views\sub_view\"/>
+    <Folder Include="src/components/sub1/"/>
+    <Folder Include="src/components/sub1/sub3/"/>
+    <Folder Include="src/components/sub1/sub2/"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="babel.config.js"/>
+    <Content Include="src\main.js"/>
+  </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
@@ -88,20 +84,20 @@
       </FlavorProperties>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
         <WebProjectProperties>
-          <StartPageUrl>
+          <StartPageUrl>&#xD;
           </StartPageUrl>
           <StartAction>CurrentPage</StartAction>
           <AspNetDebugging>True</AspNetDebugging>
           <SilverlightDebugging>False</SilverlightDebugging>
           <NativeDebugging>False</NativeDebugging>
           <SQLDebugging>False</SQLDebugging>
-          <ExternalProgram>
+          <ExternalProgram>&#xD;
           </ExternalProgram>
-          <StartExternalURL>
+          <StartExternalURL>&#xD;
           </StartExternalURL>
-          <StartCmdLineArguments>
+          <StartCmdLineArguments>&#xD;
           </StartCmdLineArguments>
-          <StartWorkingDirectory>
+          <StartWorkingDirectory>&#xD;
           </StartWorkingDirectory>
           <EnableENC>False</EnableENC>
           <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>

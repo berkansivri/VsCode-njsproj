@@ -9,3 +9,4 @@ webpack.config.js
 src/
 out/
 node_modules
+VuejsApp1/**

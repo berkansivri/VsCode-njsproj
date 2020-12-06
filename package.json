@@ -17,7 +17,7 @@
     ".njsproj",
     "njsproj"
   ],
-  "version": "0.7.0",
+  "version": "0.7.1",
   "engines": {
     "vscode": "^1.45.1"
   },
@@ -41,7 +41,7 @@
       }
     ]
   },
-  "main": "./src/extension.js",
+  "main": "./dist/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
     "webpack": "webpack --mode development",

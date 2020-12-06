@@ -8,7 +8,6 @@ let fileWatcher = null;
 let njsprojFile = null;
 
 function activate(context) {
-  console.log('ACTIVATED');
   setCommands(context);
 
   if (njsproj.checkFile()) {
@@ -20,7 +19,6 @@ function activate(context) {
 }
 
 function deactivate() {
-  console.log('DEACTIVATED');
   if (fileWatcher) {
     fileWatcher.dispose();
   }
@@ -124,9 +122,7 @@ function startWatch() {
 
 function deletePath(deletedPath, xmlObj) {
   const [content1, folder, content2] = xmlObj.Project.ItemGroup;
-  console.log(deletedPath);
   let deletedFolders = folder.Folder.filter(f => isWithin(deletedPath, f.$.Include));
-  console.log(deletedFolders);
   if (deletedFolders.length > 0) {
     folder.Folder = folder.Folder.filter(f => !deletedFolders.includes(f));
     if (content1.Content) {

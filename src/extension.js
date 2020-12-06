@@ -52,7 +52,7 @@ function startWatch() {
             });
           }
         } else {
-          let folderPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath) + path.sep;
+          let folderPath = path.relative(path.dirname(njsprojFile.fsPath), e.fsPath) + '\\';
           const isFolderExist = folder.Folder.findIndex(f => f.$.Include === folderPath) > -1;
           if (!isFolderExist) {
             folder.Folder.push({
@@ -69,7 +69,7 @@ function startWatch() {
                 if (fs.lstatSync(fullPath).isDirectory()) {
                   folder.Folder.push({
                     $: {
-                      Include: njsPath + path.sep
+                      Include: njsPath + '\\'
                     }
                   });
                   addNestedItems(fullPath);

@@ -12,7 +12,7 @@
     <ProjectGuid>d281c04c-3754-4be2-84a2-4531e41f4dd0</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>node_modules\@vue\cli-service\bin\vue-cli-service.js</StartupFile>
-    <SearchPath>&#xD;
+    <SearchPath>&#xD;&#xD;
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -29,8 +29,8 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>&#xD;
-      npm run build&#xD;
+    <PostBuildEvent>&#xD;&#xD;
+      npm run build&#xD;&#xD;
     </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
@@ -50,6 +50,11 @@
     <Content Include="src/components/sub1/sub3/c.vue"/>
     <Content Include="src/components/sub1/sub2/b.vue"/>
     <Content Include="src/components/sub1/sub2/d.vue"/>
+    <Content Include="src\components\sub1\sub3\a-edt.vue"/>
+    <Content Include="src\views\sub_view\SubView2.vue"/>
+    <Content Include="src\views\sub_view\SubView3.vue"/>
+    <Content Include="src\components\sub1\sub2\bbb.vue"/>
+    <Content Include="src\components\sub1\sub3\cc.vue"/>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dist\"/>
@@ -84,20 +89,20 @@
       </FlavorProperties>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
         <WebProjectProperties>
-          <StartPageUrl>&#xD;
+          <StartPageUrl>&#xD;&#xD;
           </StartPageUrl>
           <StartAction>CurrentPage</StartAction>
           <AspNetDebugging>True</AspNetDebugging>
           <SilverlightDebugging>False</SilverlightDebugging>
           <NativeDebugging>False</NativeDebugging>
           <SQLDebugging>False</SQLDebugging>
-          <ExternalProgram>&#xD;
+          <ExternalProgram>&#xD;&#xD;
           </ExternalProgram>
-          <StartExternalURL>&#xD;
+          <StartExternalURL>&#xD;&#xD;
           </StartExternalURL>
-          <StartCmdLineArguments>&#xD;
+          <StartCmdLineArguments>&#xD;&#xD;
           </StartCmdLineArguments>
-          <StartWorkingDirectory>&#xD;
+          <StartWorkingDirectory>&#xD;&#xD;
           </StartWorkingDirectory>
           <EnableENC>False</EnableENC>
           <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>

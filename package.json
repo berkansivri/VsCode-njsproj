@@ -17,7 +17,7 @@
     ".njsproj",
     "njsproj"
   ],
-  "version": "0.7.1",
+  "version": "0.7.2",
   "engines": {
     "vscode": "^1.45.1"
   },

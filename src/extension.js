@@ -7,10 +7,9 @@ let isWriteFinished = true;
 let fileWatcher = null;
 let njsprojFile = null;
 
-function activate(context) {
+async function activate(context) {
   setCommands(context);
-
-  if (njsproj.checkFile()) {
+  if (await njsproj.checkFile()) {
     activatedDialog();
     startWatch();
   } else {
@@ -166,7 +165,7 @@ async function setCommands(context) {
         startWatch();
         window.showInformationMessage('VS Code .njsproj Activated');
       } else {
-        window.showErrorMessage('Coult not found *.njsproj file in workspace');
+        window.showErrorMessage('Could not found *.njsproj file in workspace');
       }
     }),
     commands.registerCommand('extension.njsproj.deactivate', () => {
